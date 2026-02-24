@@ -1,0 +1,48 @@
+{
+    "uid":  227,
+    "incentive":  0,
+    "emission":  0,
+    "active":  true,
+    "last_update":  9089296,
+    "block":  9091893,
+    "axon":  true,
+    "rank":  229,
+    "n_uids":  256,
+    "nonzero":  220,
+    "top1_uid":  212,
+    "top1_inc":  0.0945449024438858,
+    "top1_emi":  13.95538330078125,
+    "neighbors":  [
+                      {
+                          "rank":  227,
+                          "uid":  245,
+                          "incentive":  0,
+                          "emission":  0
+                      },
+                      {
+                          "rank":  228,
+                          "uid":  228,
+                          "incentive":  0,
+                          "emission":  0
+                      },
+                      {
+                          "rank":  229,
+                          "uid":  227,
+                          "incentive":  0,
+                          "emission":  0
+                      },
+                      {
+                          "rank":  230,
+                          "uid":  221,
+                          "incentive":  0,
+                          "emission":  0
+                      },
+                      {
+                          "rank":  231,
+                          "uid":  208,
+                          "incentive":  0,
+                          "emission":  0
+                      }
+                  ],
+    "sampled_at":  "2026-09-17 23:23:51"
+}
