@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SN79 UID 227 live</title>
+  <style>
+    :root {
+      --bg: #101214;
+      --panel: #181b1f;
+      --line: #2a2f36;
+      --text: #e8eaed;
+      --muted: #8b939e;
+      --accent: #c4a35a;
+      --good: #3d9a6c;
+      --bad: #c45c5c;
+      --warn: #c4923a;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg); color: var(--text);
+      font: 13px/1.45 "Segoe UI", system-ui, sans-serif;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 16px; padding: 18px 22px 10px; border-bottom: 1px solid var(--line);
+    }
+    h1 { font-size: 18px; font-weight: 600; margin: 0; letter-spacing: 0.02em; }
+    .rankline { font-size: 22px; font-weight: 600; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .sub { color: var(--muted); font-size: 12px; }
+    .pill {
+      display: inline-block; padding: 2px 8px; border: 1px solid var(--line);
+      color: var(--muted); letter-spacing: 0.06em; font-size: 11px;
+    }
+    .pill.good { color: var(--good); border-color: var(--good); }
+    .pill.bad { color: var(--bad); border-color: var(--bad); }
+    .pill.warn { color: var(--warn); border-color: var(--warn); }
+    main { padding: 16px 22px 28px; }
+    .kpis { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 10px; }
+    .kpi {
+      background: var(--panel); padding: 10px 12px;
+      border: 1px solid var(--line);
+    }
+    .kpi .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .kpi .value { font-size: 20px; font-weight: 600; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .kpi .hint { color: var(--muted); font-size: 11px; margin-top: 2px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+    .panel { background: var(--panel); border: 1px solid var(--line); padding: 12px 14px; }
+    .panel h2 { margin: 0 0 8px; font-size: 13px; font-weight: 600; }
+    .caption { color: var(--muted); font-size: 11px; margin: 6px 0 0; }
+    table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    th, td { text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+    th:first-child, td:first-child { text-align: left; }
+    th { color: var(--muted); font-weight: 500; font-size: 11px; }
+    .neg { color: var(--bad); }
+    .pos { color: var(--good); }
+    .bar { height: 8px; background: #22262c; margin-top: 8px; }
+    .bar > span { display: block; height: 100%; background: var(--accent); }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+    .meta dl { display: grid; grid-template-columns: 140px 1fr; gap: 4px 10px; margin: 0; }
+    .meta dt { color: var(--muted); }
+    .meta dd { margin: 0; font-variant-numeric: tabular-nums; }
+    svg { width: 100%; height: 120px; display: block; }
+    @media (max-width: 1100px) {
+      .kpis { grid-template-columns: repeat(4, 1fr); }
+      .row, .meta { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>SN79 UID 227</h1>
+      <div class="rankline" id="rankline">Rank —</div>
+      <div class="sub">Incentive rank on Finney metagraph · refreshes with each chain sample</div>
+    </div>
+    <div class="sub" id="statusline">Collecting first sample…</div>
+  </header>
+  <main>
+      <div class="kpis" id="kpis"></div>
+      <div class="row">
+      <section class="panel">
+        <h2>Metagraph around you</h2>
+        <table>
+          <thead>
+            <tr><th>Rank</th><th>UID</th><th>Incentive</th><th>α / tempo</th><th>≈ α / day</th></tr>
+          </thead>
+          <tbody id="neighbors"></tbody>
+        </table>
+        <p class="caption" id="rankCaption">Incentive order on netuid 79. Rank only changes when validators set weights (tempo ~72 min). Chain sample age is in the header.</p>
+      </section>
+      <section class="panel">
+        <h2>Earn vs rank 1</h2>
+        <dl id="earn"></dl>
+        <p class="caption">Alpha ≈ $1.50 and 0.0034 τ today. Soft-floor dust still counts as earning; rank 1 is the real share.</p>
+      </section>
+      </div>
+      <div class="row">
+      <section class="panel">
+        <h2>Inventory and pull (last 40 ticks)</h2>
+        <svg id="chartInv" viewBox="0 0 640 120" preserveAspectRatio="none"></svg>
+        <p class="caption">Mean |inventory| (gold) and one-sided pull count (gray). Source: miner-out.log MM ticks.</p>
+      </section>
+      <section class="panel">
+        <h2>Mark-to-market vs starting wealth</h2>
+        <svg id="chartMtm" viewBox="0 0 640 120" preserveAspectRatio="none"></svg>
+        <p class="caption">Sum of (book wealth − 50,000) across 128 books. Mostly allocated ~77 base marking from init price 300, not session trading PnL. Watch the slope.</p>
+      </section>
+    </div>
+    <div class="meta">
+      <section class="panel">
+        <h2>Chain and immunity</h2>
+        <dl id="chain"></dl>
+        <div class="bar" id="immBar"><span style="width:0%"></span></div>
+        <p class="caption" id="immCaption"></p>
+      </section>
+      <section class="panel">
+        <h2>Agent</h2>
+        <dl id="agent"></dl>
+        <p class="caption">
+          <a href="https://tao.app/subnet/79" target="_blank" rel="noreferrer">tao.app SN79</a>
+          ·
+          <a href="https://tao.app/miner/227" target="_blank" rel="noreferrer">miner 227</a>
+          ·
+          <a href="https://taostats.io/subnets/79/metagraph" target="_blank" rel="noreferrer">taostats metagraph</a>
+        </p>
+      </section>
+    </div>
+    <section class="panel" style="margin-top:14px">
+      <h2>Recent ticks</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Time UTC</th><th>Quoted</th><th>Pull</th><th>Flat</th><th>Take</th>
+            <th>Keep</th><th>Inv</th><th>Loaded</th><th>MTM</th><th>Vol</th>
+          </tr>
+        </thead>
+        <tbody id="ticks"></tbody>
+      </table>
+    </section>
+  </main>
+  <script>
+    const POLL_MS = 5000;
+    const fmt = (n, d=2) => (n == null || Number.isNaN(n)) ? "—" : Number(n).toLocaleString(undefined, { maximumFractionDigits: d, minimumFractionDigits: d });
+    const fmtInt = (n) => (n == null || Number.isNaN(n)) ? "—" : Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+    function spark(el, series, color) {
+      const w = 640, h = 120, pad = 8;
+      const vals = series.filter(v => v != null);
+      if (vals.length < 2) { el.innerHTML = ""; return; }
+      const min = Math.min(...vals), max = Math.max(...vals);
+      const span = max - min || 1;
+      const step = (w - pad * 2) / (series.length - 1);
+      const pts = series.map((v, i) => {
+        const y = pad + (h - pad * 2) * (1 - ((v - min) / span));
+        return `${pad + i * step},${y}`;
+      }).join(" ");
+      el.innerHTML = `<polyline fill="none" stroke="${color}" stroke-width="1.6" points="${pts}" />`;
+    }
+
+    function dualSpark(el, a, b) {
+      const w = 640, h = 120, pad = 8;
+      const draw = (series, color) => {
+        const vals = series.filter(v => v != null);
+        if (vals.length < 2) return "";
+        const min = Math.min(...vals), max = Math.max(...vals);
+        const span = max - min || 1;
+        const step = (w - pad * 2) / (series.length - 1);
+        const pts = series.map((v, i) => {
+          const y = pad + (h - pad * 2) * (1 - ((v - min) / span));
+          return `${pad + i * step},${y}`;
+        }).join(" ");
+        return `<polyline fill="none" stroke="${color}" stroke-width="1.6" points="${pts}" />`;
+      };
+      el.innerHTML = draw(a, "#c4a35a") + draw(b, "#6b7380");
+    }
+
+    function tone(ok, warn) {
+      if (ok) return "good";
+      if (warn) return "warn";
+      return "bad";
+    }
+
+    function render(s) {
+      const latest = s.latest || {};
+      const online = !!(s.online && s.axon);
+      const stale = s.tick_age_s != null && s.tick_age_s > 45;
+      const pillClass = tone(online && !stale, online && stale);
+      const pillText = !s.online ? "MINER DOWN" : (!s.axon ? "AXON CLOSED" : (stale ? "STALE TICKS" : "LIVE"));
+      const rankText = s.rank != null && s.rank !== "" ? `Rank ${s.rank} / ${s.n_uids || 256}` : "Rank —";
+      document.getElementById("rankline").textContent = rankText;
+      document.title = s.rank != null ? `SN79 UID 227 · Rank ${s.rank}` : "SN79 UID 227 live";
+      const chainAge = s.chain_age_s == null ? "chain —" : `chain ${s.chain_age_s}s ago`;
+      document.getElementById("statusline").innerHTML =
+        `<span class="pill ${pillClass}">${pillText}</span>` +
+        ` · ${rankText}` +
+        ` · ${chainAge}` +
+        ` · PC ${s.updated || "—"} · tick ${s.tick_age_s == null ? "—" : s.tick_age_s + "s"}`;
+
+      const mtmDelta = s.window && s.window.mtm_delta;
+      const mtmCls = mtmDelta == null ? "" : (mtmDelta >= 0 ? "pos" : "neg");
+      const kpis = [
+        ["Rank", s.rank != null && s.rank !== "" ? `${s.rank} / ${s.n_uids || 256}` : "—", s.incentive > 0 ? `${s.nonzero || "—"} earning` : `incentive 0 · chain ${s.chain_age_s == null ? "—" : s.chain_age_s + "s"}`],
+        ["Incentive", fmt(s.incentive, 6), s.daily_alpha != null ? `≈ ${fmt(s.daily_alpha, 2)} α/day` : "share of miner pot"],
+        ["Mean |inv|", fmt(latest.inv, 2), "reduce 0.08 / flat 0.28"],
+        ["Loaded books", fmtInt(latest.loaded), "of 128 with |inv| > 0.10"],
+        ["Pull", fmtInt(latest.pull), "one-sided books this tick"],
+        ["Flatten", fmtInt(latest.flat), `take ${fmtInt(latest.take)}`],
+        ["MTM", fmtInt(latest.mtm), `<span class="${mtmCls}">window ${mtmDelta == null ? "—" : (mtmDelta>=0?"+":"") + fmtInt(mtmDelta)}</span>`],
+        ["Volume", fmtInt(latest.vol), s.window && s.window.vol_delta != null ? `window +${fmtInt(s.window.vol_delta)}` : "cumulative quote"],
+      ];
+      document.getElementById("kpis").innerHTML = kpis.map(([l,v,h]) =>
+        `<div class="kpi"><div class="label">${l}</div><div class="value">${v}</div><div class="hint">${h}</div></div>`
+      ).join("");
+
+      const ticks = s.ticks || [];
+      dualSpark(document.getElementById("chartInv"), ticks.map(t => t.inv), ticks.map(t => t.pull));
+      spark(document.getElementById("chartMtm"), ticks.map(t => t.mtm), "#c4a35a");
+
+      const hours = s.immunity_hours_left;
+      const pct = s.immunity_left != null && s.immunity_blocks ? Math.max(0, Math.min(100, 100 * s.immunity_left / s.immunity_blocks)) : 0;
+      const neighbors = Array.isArray(s.neighbors)
+        ? s.neighbors
+        : (s.neighbors ? Object.values(s.neighbors) : []);
+      document.getElementById("neighbors").innerHTML = neighbors.map(r => {
+        const you = Number(r.uid) === Number(s.uid);
+        return `<tr${you ? ' style="color:var(--accent)"' : ""}>
+          <td>${fmtInt(r.rank)}</td>
+          <td>${r.uid}${you ? " you" : ""}</td>
+          <td>${fmt(r.incentive, 6)}</td>
+          <td>${fmt(r.emission, 3)}</td>
+          <td>${fmt((r.emission || 0) * 20, 2)}</td>
+        </tr>`;
+      }).join("") || `<tr><td colspan="5">Waiting for next chain sample (~40s).</td></tr>`;
+      document.getElementById("earn").innerHTML = [
+        ["Your rank", s.rank != null ? `${s.rank} / ${s.n_uids}` : "—"],
+        ["UIDs earning", fmtInt(s.nonzero)],
+        ["Your α / day", s.daily_alpha != null ? fmt(s.daily_alpha, 3) : "—"],
+        ["Rank 1", s.top1_uid != null ? `UID ${s.top1_uid}` : "—"],
+        ["Rank 1 incentive", fmt(s.top1_inc, 4)],
+        ["Rank 1 α / day", s.top1_emi != null ? fmt(s.top1_emi * 20, 1) : "—"],
+      ].map(([k,v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+
+      document.getElementById("chain").innerHTML = [
+        ["UID", s.uid],
+        ["Rank", s.rank != null ? `${s.rank} / ${s.n_uids}` : "—"],
+        ["Active", String(s.active)],
+        ["Incentive", fmt(s.incentive, 6)],
+        ["Emission α/tempo", fmt(s.emission, 6)],
+        ["Block", fmtInt(s.block)],
+        ["Last update", fmtInt(s.last_update) + (s.weights_age_blocks != null ? ` (${fmtInt(s.weights_age_blocks)} blocks ago)` : "")],
+        ["Chain sample", s.chain_sampled_at || "—"],
+        ["Axon", s.axon ? "159.223.173.219:8091 open" : "8091 not reachable"],
+        ["PM2 pid", s.pm2_pid || "—"],
+      ].map(([k,v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+      document.getElementById("immBar").firstElementChild.style.width = pct + "%";
+      document.getElementById("immCaption").textContent = hours == null
+        ? "Immunity unknown until the next chain sample."
+        : (hours > 0
+          ? `${fmt(hours, 1)} h immunity remaining (${fmtInt(s.immunity_left)} of ${fmtInt(s.immunity_blocks)} blocks). Incentive stays 0 until validators write weights.`
+          : "Immunity window elapsed. Watch incentive and last_update.");
+
+      document.getElementById("agent").innerHTML = [
+        ["Startup", s.agent || "—"],
+        ["Capital", s.capital || "—"],
+        ["Hotkey", s.hotkey || "—"],
+      ].map(([k,v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+
+      const rows = ticks.slice().reverse().slice(0, 16);
+      document.getElementById("ticks").innerHTML = rows.map(t => `<tr>
+        <td>${(t.time || "").slice(11)}</td>
+        <td>${fmtInt(t.quoted)}</td>
+        <td>${fmtInt(t.pull)}</td>
+        <td>${fmtInt(t.flat)}</td>
+        <td>${fmtInt(t.take)}</td>
+        <td>${fmtInt(t.keep)}</td>
+        <td>${fmt(t.inv, 2)}</td>
+        <td>${fmtInt(t.loaded)}</td>
+        <td>${fmtInt(t.mtm)}</td>
+        <td>${fmtInt(t.vol)}</td>
+      </tr>`).join("");
+    }
+
+    async function poll() {
+      try {
+        const r = await fetch("status.json?t=" + Date.now(), { cache: "no-store" });
+        if (!r.ok) throw new Error(r.status);
+        render(await r.json());
+      } catch (e) {
+        document.getElementById("statusline").innerHTML =
+          `<span class="pill warn">WAITING</span> · ${e.message}. Collector writes live/status.json every few seconds.`;
+      }
+    }
+    poll();
+    setInterval(poll, POLL_MS);
+  </script>
+</body>
+</html>
